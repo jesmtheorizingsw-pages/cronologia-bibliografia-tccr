@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronología Interactiva TCCR - Jalin Simunovic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .timeline-item {
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .timeline-line {
+            background: linear-gradient(to bottom, #3b82f6, #8b5cf6, #ec4899);
+        }
+        
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .modal-backdrop {
+            backdrop-filter: blur(5px);
+        }
+        
+        .era-ancient { border-left: 4px solid #f59e0b; }
+        .era-modern { border-left: 4px solid #3b82f6; }
+        .era-contemporary { border-left: 4px solid #8b5cf6; }
+        .era-current { border-left: 4px solid #ec4899; }
+        
+        .category-philosophy { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+        .category-psychology { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+        .category-sociology { background: linear-gradient(135deg, #e0e7ff, #c7d2fe); }
+        .category-systems { background: linear-gradient(135deg, #fce7f3, #fbcfe8); }
+        .category-therapy { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white shadow-lg border-b-4 border-blue-500">
+        <div class="max-w-6xl mx-auto px-6 py-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Cronología Histórica Interactiva</h1>
+            <p class="text-xl text-gray-600 mb-4">Evolución del Pensamiento hacia la TCCR</p>
+            <p class="text-lg text-blue-700 font-medium">Teoría Cognosistémica de la Construcción Relacional Psicosocial Humana</p>
+            <!-- Línea de autor eliminada -->
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="max-w-6xl mx-auto px-6 py-6">
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800">Filtrar por categoría:</h3>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="filterCategory('all')" class="filter-btn bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-700 transition-colors">
+                    Todos
+                </button>
+                <button onclick="filterCategory('philosophy')" class="filter-btn bg-amber-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-amber-600 transition-colors">
+                    Filosofía
+                </button>
+                <button onclick="filterCategory('psychology')" class="filter-btn bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-600 transition-colors">
+                    Psicología
+                </button>
+                <button onclick="filterCategory('sociology')" class="filter-btn bg-purple-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-purple-600 transition-colors">
+                    Sociología
+                </button>
+                <button onclick="filterCategory('systems')" class="filter-btn bg-pink-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-pink-600 transition-colors">
+                    Sistemas
+                </button>
+                <button onclick="filterCategory('therapy')" class="filter-btn bg-green-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-green-600 transition-colors">
+                    Terapia
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="max-w-6xl mx-auto px-6 pb-12">
+        <div class="relative">
+            <!-- Línea central -->
+            <div class="absolute left-8 top-0 bottom-0 w-1 timeline-line rounded-full"></div>
+            
+            <!-- Items de la cronología -->
+            <div id="timeline-container" class="space-y-8">
+                <!-- Los items se generarán con JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <h2 id="modal-title" class="text-3xl font-bold text-gray-800"></h2>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">×</button>
+                </div>
+                <div id="modal-content" class="text-gray-700 leading-relaxed"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const timelineData = [
+            {
+                name: "Epícteto",
+                years: "c. 50–135",
+                birthYear: 50,
+                category: "philosophy",
+                era: "ancient",
+                description: "Filósofo estoico que estableció las bases del pensamiento cognitivo",
+                contribution: "Sostiene que nos afectan las opiniones más que los hechos; énfasis en autodisciplina y control interno.",
+                relevance: "Sus ideas sobre el control interno y la interpretación de los eventos son precursoras de la terapia cognitiva moderna y fundamentales para entender cómo construimos nuestra realidad psicosocial."
+            },
+            {
+                name: "Iván Pavlov",
+                years: "1849–1936",
+                birthYear: 1849,
+                category: "psychology",
+                era: "modern",
+                description: "Fisiólogo ruso pionero del conductismo",
+                contribution: "Experimentos que impulsan el conductismo y el estudio del comportamiento observable (c. 1900–1930).",
+                relevance: "Sus descubrimientos sobre el condicionamiento clásico sentaron las bases para entender los mecanismos de aprendizaje y adaptación que son centrales en la construcción relacional."
+            },
+
+            /* === AÑADIDOS (misma estructura y estilo) === */
+            {
+                name: "Edmund Husserl",
+                years: "1859–1938",
+                birthYear: 1859,
+                category: "philosophy",
+                era: "modern",
+                description: "Filósofo alemán, fundador de la fenomenología.",
+                contribution: "Intencionalidad y análisis de la experiencia vivida; reducción fenomenológica.",
+                relevance: "Base para la comprensión de intersubjetividad y sentido vivido en la construcción relacional."
+            },
+            {
+                name: "George H. Mead",
+                years: "1863–1931",
+                birthYear: 1863,
+                category: "sociology",
+                era: "modern",
+                description: "Filósofo y sociólogo, precursor del interaccionismo simbólico.",
+                contribution: "Desarrollo del ‘yo’ desde la interacción; ‘otro generalizado’.",
+                relevance: "Explica cómo el self emerge y se negocia en relaciones sociales."
+            },
+            {
+                name: "Max Weber",
+                years: "1864–1920",
+                birthYear: 1864,
+                category: "sociology",
+                era: "modern",
+                description: "Sociólogo alemán, sociología comprensiva.",
+                contribution: "Acción social con sentido, tipos ideales y racionalización.",
+                relevance: "Marco para comprender acción y significados en contextos relacionales."
+            },
+            {
+                name: "Martin Heidegger",
+                years: "1889–1976",
+                birthYear: 1889,
+                category: "philosophy",
+                era: "modern",
+                description: "Filósofo alemán; fenomenología hermenéutica.",
+                contribution: "Ser-en-el-mundo; comprensión situada.",
+                relevance: "Profundiza la base ontológica de la construcción de sentido."
+            },
+
+            {
+                name: "Harold A. Innis",
+                years: "1894–1952",
+                birthYear: 1894,
+                category: "sociology",
+                era: "modern",
+                description: "Teórico de la comunicación canadiense",
+                contribution: "'Time-binding' y 'space-binding' para analizar cómo los medios configuran tiempo y espacio social (1930s–1950s).",
+                relevance: "Su análisis de cómo los medios de comunicación estructuran las relaciones sociales es fundamental para entender la construcción relacional en diferentes contextos temporales y espaciales."
+            },
+
+            {
+                name: "Lev S. Vygotsky",
+                years: "1896–1934",
+                birthYear: 1896,
+                category: "psychology",
+                era: "modern",
+                description: "Psicólogo soviético del desarrollo; enfoque socio-histórico.",
+                contribution: "Mediación cultural, lenguaje y zona de desarrollo próximo.",
+                relevance: "Refuerza el carácter socio-cognitivo y cultural del desarrollo."
+            },
+            {
+                name: "Alfred Schütz",
+                years: "1899–1959",
+                birthYear: 1899,
+                category: "sociology",
+                era: "modern",
+                description: "Sociólogo y fenomenólogo austriaco",
+                contribution: "Fenomenología del mundo social (obra base 1932); percepción e interpretación del mundo social.",
+                relevance: "Su trabajo sobre la construcción intersubjetiva del significado es esencial para comprender cómo los individuos construyen su realidad social a través de las relaciones."
+            },
+            {
+                name: "Herbert Blumer",
+                years: "1900–1987",
+                birthYear: 1900,
+                category: "sociology",
+                era: "modern",
+                description: "Sociólogo estadounidense; consolidó el interaccionismo simbólico.",
+                contribution: "Tres premisas: significado, interacción y proceso interpretativo.",
+                relevance: "Sustenta la negociación de significados en lo relacional."
+            },
+            {
+                name: "Ludwig von Bertalanffy",
+                years: "1901–1972",
+                birthYear: 1901,
+                category: "systems",
+                era: "modern",
+                description: "Biólogo austriaco, padre de la Teoría General de Sistemas",
+                contribution: "Teoría General de Sistemas (TGS) como marco integrador (1940s–1960s).",
+                relevance: "Su enfoque sistémico proporciona el marco conceptual fundamental para entender las interacciones complejas en la TCCR, donde los individuos son parte de sistemas relacionales más amplios."
+            },
+            {
+                name: "Talcott Parsons",
+                years: "1902–1979",
+                birthYear: 1902,
+                category: "sociology",
+                era: "modern",
+                description: "Sociólogo estadounidense, teórico del funcionalismo",
+                contribution: "Paradigma AGIL; introduce teoría de sistemas en sociología (1950s–1960s).",
+                relevance: "Su modelo AGIL (Adaptación, Logro de metas, Integración, Latencia) ofrece un marco para entender cómo los sistemas sociales mantienen su estabilidad y se adaptan al cambio."
+            },
+            {
+                name: "Carl R. Rogers",
+                years: "1902–1987",
+                birthYear: 1902,
+                category: "therapy",
+                era: "modern",
+                description: "Psicólogo; terapia centrada en la persona.",
+                contribution: "Empatía, congruencia y aceptación incondicional.",
+                relevance: "Condiciones relacionales que facilitan cambio de significado."
+            },
+            {
+                name: "Gregory Bateson",
+                years: "1904–1980",
+                birthYear: 1904,
+                category: "systems",
+                era: "modern",
+                description: "Antropólogo y teórico de sistemas británico-estadounidense",
+                contribution: "Enfoque ecosistémico; Steps to an Ecology of Mind (1972).",
+                relevance: "Su perspectiva ecosistémica y su trabajo sobre la comunicación y los patrones relacionales son fundamentales para entender la naturaleza sistémica de las construcciones psicosociales."
+            },
+            {
+                name: "Jean-Paul Sartre",
+                years: "1905–1980",
+                birthYear: 1905,
+                category: "philosophy",
+                era: "modern",
+                description: "Filósofo francés; existencialismo y fenomenología.",
+                contribution: "Libertad, responsabilidad y proyecto.",
+                relevance: "Agencia y proyecto vital en la identidad relacional."
+            },
+            {
+                name: "Maurice Merleau-Ponty",
+                years: "1908–1961",
+                birthYear: 1908,
+                category: "philosophy",
+                era: "modern",
+                description: "Filósofo francés; fenomenología de la percepción.",
+                contribution: "Cuerpo vivido y entrelazamiento yo–mundo.",
+                relevance: "Base para experiencia encarnada y situada."
+            },
+            {
+                name: "Robert K. Merton",
+                years: "1910–2003",
+                birthYear: 1910,
+                category: "sociology",
+                era: "modern",
+                description: "Sociólogo estadounidense, refinó el funcionalismo",
+                contribution: "Funciones manifiestas/latentes y disfunciones; funcionalismo matizado (1950s–1960s).",
+                relevance: "Su distinción entre funciones manifiestas y latentes ayuda a entender las múltiples dimensiones de las relaciones sociales y sus efectos no intencionados en la construcción psicosocial."
+            },
+            {
+                name: "Albert Ellis",
+                years: "1913–2007",
+                birthYear: 1913,
+                category: "therapy",
+                era: "modern",
+                description: "Psicoterapeuta; creador de la TREC.",
+                contribution: "Modelo ABC y disputa de creencias irracionales.",
+                relevance: "Base de reestructuración cognitiva aplicable en la TCCR."
+            },
+            {
+                name: "Jerome Bruner",
+                years: "1915–2016",
+                birthYear: 1915,
+                category: "psychology",
+                era: "contemporary",
+                description: "Psicólogo estadounidense, pionero de la psicología cognitiva",
+                contribution: "Narrativa y construcción de significado e identidad; Actos de significado (1990), La educación, puerta de la cultura (1996/1997).",
+                relevance: "Su trabajo sobre la construcción narrativa del significado es central para entender cómo las personas construyen su identidad y dan sentido a sus experiencias relacionales."
+            },
+            {
+                name: "Urie Bronfenbrenner",
+                years: "1917–2005",
+                birthYear: 1917,
+                category: "psychology",
+                era: "contemporary",
+                description: "Psicólogo; modelo bioecológico del desarrollo humano.",
+                contribution: "De micro a macro-sistemas; procesos proximales.",
+                relevance: "Anclaje multinivel de la construcción relacional."
+            },
+            {
+                name: "Ernst von Glasersfeld",
+                years: "1917–2010",
+                birthYear: 1917,
+                category: "philosophy",
+                era: "contemporary",
+                description: "Filósofo austriaco-estadounidense, constructivista radical",
+                contribution: "Constructivismo radical: el conocimiento es construcción activa (1970s–1990s).",
+                relevance: "Su constructivismo radical fundamenta la idea de que la realidad es activamente construida por el observador, principio clave en la TCCR para entender la construcción relacional."
+            },
+            {
+                name: "Leon Festinger",
+                years: "1919–1989",
+                birthYear: 1919,
+                category: "psychology",
+                era: "contemporary",
+                description: "Psicólogo social; disonancia cognitiva.",
+                contribution: "Ajuste de creencias y conductas ante incongruencia.",
+                relevance: "Mecanismos de cambio psicosocial integrables con procesos narrativos."
+            },
+            {
+                name: "Henri Tajfel & John C. Turner",
+                years: "1919–1982 & 1947–2011",
+                birthYear: 1919,
+                category: "psychology",
+                era: "contemporary",
+                description: "Teoría de la identidad social.",
+                contribution: "Pertenencia, categorización y normas de grupo.",
+                relevance: "Capa socioidentitaria para comprender self/otros."
+            },
+            {
+                name: "Paul Watzlawick, Janet Beavin & Don Jackson",
+                years: "1921–2007, n. 1931 & 1920–1968",
+                birthYear: 1920,
+                category: "systems",
+                era: "modern",
+                description: "Teóricos de la comunicación humana; pragmática de la interacción.",
+                contribution: "Axiomas de la comunicación y pautas relacionales.",
+                relevance: "Patrones comunicacionales en sistemas humanos."
+            },
+            {
+                name: "Aaron T. Beck",
+                years: "1921–2021",
+                birthYear: 1921,
+                category: "therapy",
+                era: "contemporary",
+                description: "Psiquiatra; fundador de la Terapia Cognitiva.",
+                contribution: "Tríada cognitiva; pensamientos automáticos y esquemas.",
+                relevance: "Base clínica para intervenir significado y emoción."
+            },
+            {
+                name: "Albert Bandura",
+                years: "1925–2021",
+                birthYear: 1925,
+                category: "psychology",
+                era: "contemporary",
+                description: "Psicólogo; aprendizaje social y autoeficacia.",
+                contribution: "Modelado, refuerzo vicario y agencia humana.",
+                relevance: "Conecta observación, autoeficacia y cambio conductual relacional."
+            },
+            {
+                name: "M.A.K. Halliday & C.M.I.M. Matthiessen",
+                years: "1925–2018 & n. 1950",
+                birthYear: 1925,
+                category: "sociology",
+                era: "contemporary",
+                description: "Lingüística sistémico-funcional.",
+                contribution: "Metafunciones; relación lenguaje y poder.",
+                relevance: "Elecciones lingüísticas que estructuran relaciones/poder."
+            },
+            {
+                name: "Michel Foucault",
+                years: "1926–1984",
+                birthYear: 1926,
+                category: "philosophy",
+                era: "contemporary",
+                description: "Filósofo francés, teórico del poder y el saber",
+                contribution: "Saber-poder y gubernamentalidad; obras clave en 1960s–1970s (p. ej., Vigilar y castigar, 1975).",
+                relevance: "Su análisis de las relaciones de poder y cómo estas configuran la subjetividad es esencial para entender las dimensiones políticas de la construcción relacional psicosocial."
+            },
+            {
+                name: "Niklas Luhmann",
+                years: "1927–1998",
+                birthYear: 1927,
+                category: "systems",
+                era: "contemporary",
+                description: "Sociólogo alemán, teórico de sistemas sociales",
+                contribution: "Sistemas sociales autopoiéticos y autorreferenciales vía comunicación (1960s–1990s).",
+                relevance: "Su teoría de sistemas autopoiéticos proporciona un marco sofisticado para entender cómo los sistemas sociales se auto-organizan y mantienen a través de la comunicación."
+            },
+            {
+                name: "Peter L. Berger & Thomas Luckmann",
+                years: "1929–2017 & 1927–2016",
+                birthYear: 1927,
+                category: "sociology",
+                era: "contemporary",
+                description: "Autores de 'La construcción social de la realidad' (1966).",
+                contribution: "Externalización–objetivación–internalización del conocimiento social.",
+                relevance: "Explican cómo se instituye y aprende la realidad cotidiana."
+            },
+            {
+                name: "Humberto Maturana & Francisco Varela",
+                years: "1928–2021 & 1946–2001",
+                birthYear: 1928,
+                category: "systems",
+                era: "contemporary",
+                description: "Biólogos chilenos, creadores del concepto de autopoiesis",
+                contribution: "Autopoiesis en sistemas vivos; auto-organización (1970s–1980s).",
+                relevance: "Su concepto de autopoiesis es fundamental para entender cómo los sistemas vivos (incluyendo los sistemas psicosociales) se auto-organizan y mantienen su identidad a través de tiempo."
+            },
+            {
+                name: "Amartya Sen",
+                years: "n. 1933",
+                birthYear: 1933,
+                category: "sociology",
+                era: "contemporary",
+                description: "Economista y filósofo indio, Premio Nobel",
+                contribution: "Enfoque de capacidades y justicia social; ampliación de libertades (1970s–2000s; síntesis 2009).",
+                relevance: "Su enfoque de capacidades considera dimensiones relacionales del bienestar."
+            },
+            {
+                name: "Roland G. Tharp",
+                years: "n. 1933",
+                birthYear: 1933,
+                category: "psychology",
+                era: "contemporary",
+                description: "Psicólogo estadounidense, teórico del cambio",
+                contribution: "Teoría Delta del cambio psicosocial: Beta (estabilidad), Alfa (crisis), Delta (reorganización) — formulación 2012, trayectoria previa desde 1960s.",
+                relevance: "Marco dinámico para comprender transformaciones en sistemas relacionales."
+            },
+            {
+                name: "Kenneth J. Gergen",
+                years: "n. 1934",
+                birthYear: 1934,
+                category: "sociology",
+                era: "contemporary",
+                description: "Psicólogo social; referente del construccionismo social.",
+                contribution: "Conocimiento situado, multiplicidad de voces y co-construcción del yo.",
+                relevance: "Visión relacional y dialógica de identidad y significado."
+            },
+            {
+                name: "Anthony Giddens",
+                years: "n. 1938",
+                birthYear: 1938,
+                category: "sociology",
+                era: "contemporary",
+                description: "Sociólogo británico, teórico de la modernidad",
+                contribution: "Doble hermenéutica y modernidad tardía (1970s–1990s).",
+                relevance: "La interpretación de interpretaciones en sistemas sociales reflexivos."
+            },
+            {
+                name: "Donald Meichenbaum",
+                years: "n. 1940",
+                birthYear: 1940,
+                category: "therapy",
+                era: "contemporary",
+                description: "Psicólogo clínico; inoculación de estrés.",
+                contribution: "Auto-instrucciones y afrontamiento graduado.",
+                relevance: "Técnicas cognitivo-conductuales para reorganización narrativa."
+            },
+            {
+                name: "Marsha M. Linehan",
+                years: "n. 1943",
+                birthYear: 1943,
+                category: "therapy",
+                era: "contemporary",
+                description: "Psicóloga estadounidense, creadora de la DBT",
+                contribution: "Terapia Dialéctica Conductual (DBT) (1980s–1990s; manual 1993).",
+                relevance: "Regulación emocional y habilidades dialécticas en contextos relacionales."
+            },
+            {
+                name: "Vittorio F. Guidano",
+                years: "1944–1999",
+                birthYear: 1944,
+                category: "therapy",
+                era: "contemporary",
+                description: "Enfoque cognitivo-posracionalista.",
+                contribution: "Organización del self y coherencia identitaria.",
+                relevance: "Perspectiva constructiva alineada con lo narrativo-relacional."
+            },
+            {
+                name: "John D. Teasdale, Mark Williams & Zindel Segal",
+                years: "n. 1943, n. 1952 & n. 1956",
+                birthYear: 1943,
+                category: "therapy",
+                era: "contemporary",
+                description: "Psicólogos creadores de la MBCT",
+                contribution: "MBCT (finales 1990s–2000s; manual 2002).",
+                relevance: "Integración de mindfulness con terapia cognitiva."
+            },
+            {
+                name: "David Epston & Michael White",
+                years: "n. 1944 & 1948–2008",
+                birthYear: 1944,
+                category: "therapy",
+                era: "contemporary",
+                description: "Terapeutas creadores de la Terapia Narrativa",
+                contribution: "Terapia Narrativa (1980s–1990s; 1993).",
+                relevance: "Construcción y reconstrucción identitaria vía relatos."
+            },
+            {
+                name: "Jeffrey C. Alexander",
+                years: "n. 1947",
+                birthYear: 1947,
+                category: "sociology",
+                era: "contemporary",
+                description: "Sociólogo estadounidense, neofuncionalista",
+                contribution: "Neofuncionalismo como actualización del parsonianismo (desde 1982).",
+                relevance: "Integra elementos culturales y simbólicos en sistemas sociales."
+            },
+            {
+                name: "Kimberlé Crenshaw",
+                years: "n. 1959",
+                birthYear: 1959,
+                category: "sociology",
+                era: "contemporary",
+                description: "Jurista estadounidense, teórica de la interseccionalidad",
+                contribution: "Interseccionalidad; acuña el término en 1989 en el contexto de luchas civiles y feminismo.",
+                relevance: "Comprensión de identidades múltiples y opresiones entrecruzadas."
+            },
+            {
+                name: "Óscar F. Gonçalves",
+                years: "n. 1959",
+                birthYear: 1959,
+                category: "therapy",
+                era: "contemporary",
+                description: "Psicólogo portugués, especialista en terapia narrativa",
+                contribution: "Psicoterapia cognitiva narrativa; manual de terapia breve (2002).",
+                relevance: "Herramientas para trabajar con construcción de significado en terapia."
+            },
+            {
+                name: "Bruno Cayoun",
+                years: "n. c. 1960s",
+                birthYear: 1960,
+                category: "therapy",
+                era: "contemporary",
+                description: "Psicólogo belga-australiano, creador de MiCBT",
+                contribution: "Terapia Cognitivo-Conductual con Mindfulness Integrado (MiCBT) (2010s; 2014).",
+                relevance: "Modelo sistemático de atención plena en procesos cognitivo-conductuales."
+            },
+            {
+                name: "Yuval N. Harari",
+                years: "n. 1976",
+                birthYear: 1976,
+                category: "philosophy",
+                era: "current",
+                description: "Historiador israelí, autor de bestsellers sobre humanidad",
+                contribution: "En 2023 destaca el poder de los sistemas narrativos para la cooperación a gran escala.",
+                relevance: "Narrativas compartidas como base de coordinación social macro."
+            }
+            /* Ítem 'Jalin Simunovic' eliminado del timeline */
+        ];
+
+        let currentFilter = 'all';
+
+        function renderTimeline() {
+            const container = document.getElementById('timeline-container');
+            const filteredData = currentFilter === 'all' 
+                ? timelineData 
+                : timelineData.filter(item => item.category === currentFilter);
+            
+            container.innerHTML = filteredData.map((item, index) => `
+                <div class="timeline-item ${item.category} ${item.era} relative flex items-start cursor-pointer" onclick="openModal('${item.name}')">
+                    <div class="absolute left-8 w-4 h-4 bg-white border-4 border-blue-500 rounded-full pulse-dot transform -translate-x-1/2"></div>
+                    <div class="ml-20 bg-white rounded-xl shadow-md p-6 w-full category-${item.category} hover:shadow-lg transition-all duration-300">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-bold text-gray-800">${item.name}</h3>
+                            <span class="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">${item.years}</span>
+                        </div>
+                        <p class="text-gray-700 mb-3">${item.description}</p>
+                        <p class="text-sm text-gray-600 italic">"${item.contribution}"</p>
+                        <div class="mt-4 flex justify-between items-center">
+                            <span class="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
+                                ${getCategoryName(item.category)}
+                            </span>
+                            <span class="text-xs text-gray-500">Clic para más detalles</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getCategoryName(category) {
+            const names = {
+                'philosophy': 'Filosofía',
+                'psychology': 'Psicología', 
+                'sociology': 'Sociología',
+                'systems': 'Sistemas',
+                'therapy': 'Terapia'
+            };
+            return names[category] || category;
+        }
+
+        function filterCategory(category) {
+            currentFilter = category;
+            renderTimeline();
+            
+            // Actualizar botones activos (sin tocar la lógica original)
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-gray-800', 'bg-amber-600', 'bg-blue-600', 'bg-purple-600', 'bg-pink-600', 'bg-green-600');
+                btn.classList.add('bg-gray-300', 'text-gray-700');
+            });
+            
+            event.target.classList.remove('bg-gray-300', 'text-gray-700');
+            const colors = {
+                'all': 'bg-gray-800',
+                'philosophy': 'bg-amber-500',
+                'psychology': 'bg-blue-500',
+                'sociology': 'bg-purple-500',
+                'systems': 'bg-pink-500',
+                'therapy': 'bg-green-500'
+            };
+            event.target.classList.add(colors[category], 'text-white');
+        }
+
+        // CORRECCIÓN: usar innerHTML para decodificar entidades en `years`
+        function openModal(name) {
+            const item = timelineData.find(i => i.name === name);
+            if (!item) return;
+            
+            document.getElementById('modal-title').innerHTML = `${item.name} (${item.years})`;
+            document.getElementById('modal-content').innerHTML = `
+                <div class="space-y-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-gray-800 mb-2">Descripción:</h4>
+                        <p class="text-gray-700">${item.description}</p>
+                    </div>
+                    
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-blue-800 mb-2">Contribución Principal:</h4>
+                        <p class="text-blue-700">${item.contribution}</p>
+                    </div>
+                    
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-green-800 mb-2">Relevancia para la TCCR:</h4>
+                        <p class="text-green-700">${item.relevance}</p>
+                    </div>
+                    
+                    <div class="flex justify-center">
+                        <span class="inline-block bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium">
+                            ${getCategoryName(item.category)}
+                        </span>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Inicializar
+        renderTimeline();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96f1c25eb3cc6f2b',t:'MTc1NTE4ODIxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
